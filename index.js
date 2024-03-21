@@ -136,7 +136,16 @@ Parameter       NONE
 Methods         POST
 */ sexy.post("/book/new", (req, res) => {
     const newBook = req.body;
-    database.books.push(newBook);
+    // Check if the book already exists
+    const existingBookIndex = database.books.findIndex((book) => book.ISBN === newBook.ISBN);
+
+    if (existingBookIndex !== -1) {
+        // If the book exists, update it
+        database.books[existingBookIndex] = newBook;
+    } else {
+        // If the book doesn't exist, add it
+        database.books.push(newBook);
+    }
     return res.json({updatedBooks: database.books});
 });
 /*
@@ -148,7 +157,15 @@ Methods         POST
 */ 
 sexy.post("/author/new", (req, res) => {
     const newAuthor = req.body;
-    database.authors.push(newAuthor);
+    const existingAuthorIndex = database.authors.findIndex((author) => author.id === newAuthor.id);
+
+    if (existingAuthorIndex !== -1) {
+        // If the author exists, update it
+        database.authors[existingAuthorIndex] = newAuthor;
+    } else {
+        // If the author doesn't exist, add it
+        database.authors.push(newAuthor);
+    }
     return res.json({updatedAuthors: database.authors});
 });
 
@@ -161,7 +178,15 @@ Methods         POST
 */
 sexy.post("/publication/new", (req, res) => {
     const newPublication = req.body;
-    database.publications.push(newPublication);
+    const existingPublicationIndex = database.publications.findIndex((publication) => publication.id === newPublication.id);
+
+    if (existingPublicationIndex !== -1) {
+        // If the publication exists, update it
+        database.publications[existingPublicationIndex] = newPublication;
+    } else {
+        // If the publication doesn't exist, add it
+        database.publications.push(newPublication);
+    }
     return res.json({updatedPublications: database.publications});
 });
  sexy.listen(3000, () => {
