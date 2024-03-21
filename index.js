@@ -1,19 +1,19 @@
 const express = require('express');
 
+var sexParse=require("body-parser");//it allows express to read body and then pass it or convert into JSON format
 //database
 const database = require("./database");
 
 //initialise express
-const booky = express();
-
+const sexy = express();
+ sexy.use(sexParse.urlencoded({extended:true}));     sexy.use(sexParse.json());
 /*
 Route           /books                   GET: retrieve all books in the library.
 Description     to get all books
 Access          PUBLIC
 Parameter       NONE
 Methods         GET
-*/
-booky.get("/", (req, res) => {
+*/ sexy.get("/", (req, res) => {
     return res.json({books: database.books});
 } );
 /*
@@ -22,8 +22,7 @@ Description     to get specific book based on ISBN
 Access          PUBLIC
 Parameter       isbn
 Methods         GET
-*/
-booky.get("/is/:isbn", (req, res) => {
+*/ sexy.get("/is/:isbn", (req, res) => {
     const getspecifiedbook=database.books.filter( (books) => books.ISBN === req.params.isbn);
     if(getspecifiedbook.length === 0){
         return res.json({error: `No book found for the ISBN of ${req.params.isbn}`});
@@ -36,8 +35,7 @@ Description     to get specific book based on category
 Access          PUBLIC
 Parameter       category
 Methods         GET
-*/
-booky.get("/c/:category",(req,res)=>{
+*/ sexy.get("/c/:category",(req,res)=>{
     const getbookbasedoncategory=database.books.filter((books)=>books.category.includes(req.params.category));
     if(getbookbasedoncategory.length===0){
         return res.json({error: `No book found for the category of ${req.params.category}`});
@@ -50,8 +48,7 @@ Description     to get specific book based on language
 Access          PUBLIC
 Parameter       language
 Methods         GET
-*/
-booky.get("/l/:language",(req,res)=>{
+*/ sexy.get("/l/:language",(req,res)=>{
     const getbookbasedonlanguage=database.books.filter((books)=>books.language.includes(req.params.language));
     if(getbookbasedonlanguage.length===0){
         return res.json({error: `No book found for the language of ${req.params.language}`});
@@ -64,8 +61,7 @@ Description     to get all the authors
 Access          PUBLIC
 Parameter       none
 Methods         GET
-*/
-booky.get("/author/:name", (req, res) => {
+*/ sexy.get("/author/:name", (req, res) => {
     return res.json({author: database.authors});
 } );
 /*
@@ -74,8 +70,7 @@ Description     to get all the authors based on books
 Access          PUBLIC
 Parameter       isbn
 Methods         GET
-*/
-booky.get("/author/book/:isbn", (req, res) => {
+*/ sexy.get("/author/book/:isbn", (req, res) => {
     const getauthorbasedonbook=database.authors.filter((author)=>author.books.includes(req.params.isbn));
     if(getauthorbasedonbook.length===0){
         return res.json({error: `No author found for the book of ${req.params.isbn}`});
@@ -88,8 +83,7 @@ Description     to get all the authors based on ids
 Access          PUBLIC
 Parameter       id
 Methods         GET
-*/
-booky.get("/author/id/:id", (req, res) => {
+*/ sexy.get("/author/id/:id", (req, res) => {
     const getauthorbasedonid=database.authors.filter((author)=>author.id===req.params.id);
     if(getauthorbasedonid.length===0){
         return res.json({error: `No author found for the id of ${req.params.id}`});
@@ -102,8 +96,7 @@ Description     to get all the publication
 Access          PUBLIC
 Parameter       NONE
 Methods         GET
-*/
-booky.get("/publication", (req, res) => {
+*/ sexy.get("/publication", (req, res) => {
     return res.json({publication: database.publications});
 } );
 /*
@@ -112,8 +105,7 @@ Description     to get all the publication based on name
 Access          PUBLIC
 Parameter       name
 Methods         GET
-*/
-booky.get("/publication/:name", (req, res) => {
+*/ sexy.get("/publication/:name", (req, res) => {
    let publication = database.publications.filter((publication) => publication.name === req.params.name);
    if (!publication.length) {
       return res.status(404).json({error: `No publication found for the name of ${req.params.name}`}); 
@@ -126,8 +118,7 @@ Description     to get all the publication based on book
 Access          PUBLIC
 Parameter       book
 Methods         GET
-*/
-booky.get("/publication/book/:isbn", (req, res) => {
+*/ sexy.get("/publication/book/:isbn", (req, res) => {
     let publication = database.publications.filter((publication) => publication.books.includes(req.params.isbn));
     if (!publication.length) {
       return res.status(404).json({error: `No publication found for the book of ${req.params.isbn}`}); 
@@ -135,6 +126,44 @@ booky.get("/publication/book/:isbn", (req, res) => {
     let getpublicationbasedonbook=database.publications.filter((publication)=>publication.books.includes(req.params.isbn));
     return res.json(getpublicationbasedonbook);
 })
-booky.listen(3000, () => {
+
+//post
+/*
+Route           /book/new
+Description     add new book
+Access          PUBLIC
+Parameter       NONE
+Methods         POST
+*/ sexy.post("/book/new", (req, res) => {
+    const newBook = req.body;
+    database.books.push(newBook);
+    return res.json({updatedBooks: database.books});
+});
+/*
+Route           /author/new
+Description     add new author
+Access          PUBLIC
+Parameter       NONE
+Methods         POST
+*/ 
+sexy.post("/author/new", (req, res) => {
+    const newAuthor = req.body;
+    database.authors.push(newAuthor);
+    return res.json({updatedAuthors: database.authors});
+});
+
+/*
+Route           /publication/new
+Description     add new publication
+Access          PUBLIC
+Parameter       NONE
+Methods         POST
+*/
+sexy.post("/publication/new", (req, res) => {
+    const newPublication = req.body;
+    database.publications.push(newPublication);
+    return res.json({updatedPublications: database.publications});
+});
+ sexy.listen(3000, () => {
     console.log("Hey server is running");
 });

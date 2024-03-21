@@ -29,13 +29,10 @@
 //we need an api to get specific publications
 //we need an api to get a list of publications based on books
 
-//POST /books - add new book
-//{newBook: {book details}}
-//POST /authors - add new author
-//{newAuthor: {author details}}
-//PUT /books/isbn : update book details
-//{updateBook: {updated book details}}
-//DELETE /books/isbn : delete a book
-//GET /publication/:name - get a publication based on name
-//GET /categories/:categoryName - get a list of books based on category
-//GET /languages/:language - get a list of books based on language
+//post request
+//1. Add new book 
+//   - fields: ISBN, title  pub date, language, num page, author[], category[]
+//2. add new Author
+//   - fields : id, name, books[]
+//3. add new publication
+//   - field : id ,name, books[]
