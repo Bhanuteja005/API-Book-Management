@@ -36,3 +36,12 @@
 //   - fields : id, name, books[]
 //3. add new publication
 //   - field : id ,name, books[]
+
+
+//put
+//update book details if author is changed or anything else
+
+//delete
+//delete book
+//delete author from book
+//delete author from book and related book from author
