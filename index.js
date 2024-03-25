@@ -1,11 +1,22 @@
-const express = require('express');
+require("dotenv").config();
 
+const express = require('express');
+const mongodb = require('mongoose');
 var sexParse=require("body-parser");//it allows express to read body and then pass it or convert into JSON format
 //database
 const database = require("./database");
 
 //initialise express
 const sexy = express();
+
+console.log(process.env.MONGO_URL);
+mongodb.connect(process.env.MONGO_URL,{
+    useNewUrlParser : true ,
+     useUnifiedTopology : true,
+    }).then(()=>console.log("connection established"));
+
+
+
  sexy.use(sexParse.urlencoded({extended:true}));     sexy.use(sexParse.json());
 /*
 Route           /books                   GET: retrieve all books in the library.
