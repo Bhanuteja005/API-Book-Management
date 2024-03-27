@@ -4,7 +4,12 @@ const express = require('express');
 const mongodb = require('mongoose');
 var sexParse=require("body-parser");//it allows express to read body and then pass it or convert into JSON format
 //database
-const database = require("./database");
+const database = require("./database/database");
+
+//models
+const BookModel = require("./database/books");
+const AuthorModel = require("./database/authors");
+const PublicationModel = require("./database/publication");
 
 //initialise express
 const sexy = express();
@@ -24,7 +29,8 @@ Description     to get all books
 Access          PUBLIC
 Parameter       NONE
 Methods         GET
-*/ sexy.get("/", (req, res) => {
+*/ sexy.get("/", async(req, res) => {
+    const getAllBooks = await BookModel.find();
     return res.json({books: database.books});
 } );
 /*
