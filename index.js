@@ -7,8 +7,8 @@ var sexParse=require("body-parser");//it allows express to read body and then pa
 const database = require("./database/database");
 
 //models
-const BookModel = require("./database/books");
-const AuthorModel = require("./database/authors");
+const BookModel = require("./database/book");
+const AuthorModel = require("./database/author");
 const PublicationModel = require("./database/publication");
 
 //initialise express
@@ -31,7 +31,7 @@ Parameter       NONE
 Methods         GET
 */ sexy.get("/", async(req, res) => {
     const getAllBooks = await BookModel.find();
-    return res.json({books: database.books});
+    return res.json(getAllBooks);
 } );
 /*
 Route           /is
