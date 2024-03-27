@@ -39,9 +39,11 @@ Description     to get specific book based on ISBN
 Access          PUBLIC
 Parameter       isbn
 Methods         GET
-*/ sexy.get("/is/:isbn", (req, res) => {
-    const getspecifiedbook=database.books.filter( (books) => books.ISBN === req.params.isbn);
-    if(getspecifiedbook.length === 0){
+*/ sexy.get("/is/:isbn", async(req, res) => {
+
+    const getspecifiedbook=await BookModel.findOne({ISBN: req.params.isbn});
+    //null !0=1,!1=0
+    if(!getspecifiedbook){
         return res.json({error: `No book found for the ISBN of ${req.params.isbn}`});
     }
     return res.json({book: getspecifiedbook});
@@ -52,9 +54,9 @@ Description     to get specific book based on category
 Access          PUBLIC
 Parameter       category
 Methods         GET
-*/ sexy.get("/c/:category",(req,res)=>{
-    const getbookbasedoncategory=database.books.filter((books)=>books.category.includes(req.params.category));
-    if(getbookbasedoncategory.length===0){
+*/ sexy.get("/c/:category",async(req,res)=>{
+   const getbookbasedoncategory=await BookModel.findOne({category: req.params.category});
+    if(!getbookbasedoncategory){
         return res.json({error: `No book found for the category of ${req.params.category}`});
     }
     return res.json({book: getbookbasedoncategory});
@@ -65,9 +67,9 @@ Description     to get specific book based on language
 Access          PUBLIC
 Parameter       language
 Methods         GET
-*/ sexy.get("/l/:language",(req,res)=>{
-    const getbookbasedonlanguage=database.books.filter((books)=>books.language.includes(req.params.language));
-    if(getbookbasedonlanguage.length===0){
+*/ sexy.get("/l/:language",async(req,res)=>{
+    const getbookbasedonlanguage=await BookModel.findOne({language: req.params.language});
+        if(!getbookbasedonlanguage){
         return res.json({error: `No book found for the language of ${req.params.language}`});
     }
     return res.json({book: getbookbasedonlanguage});
@@ -78,8 +80,9 @@ Description     to get all the authors
 Access          PUBLIC
 Parameter       none
 Methods         GET
-*/ sexy.get("/author/:name", (req, res) => {
-    return res.json({author: database.authors});
+*/ sexy.get("/author", async(req, res) => {
+    const getAllAuthors = await AuthorModel.find();
+    return res.json(getAllAuthors);
 } );
 /*
 Route           /author/book
@@ -87,9 +90,9 @@ Description     to get all the authors based on books
 Access          PUBLIC
 Parameter       isbn
 Methods         GET
-*/ sexy.get("/author/book/:isbn", (req, res) => {
-    const getauthorbasedonbook=database.authors.filter((author)=>author.books.includes(req.params.isbn));
-    if(getauthorbasedonbook.length===0){
+*/ sexy.get("/author/book/:isbn", async(req, res) => {
+    const getauthorbasedonbook=await AuthorModel.find({books: req.params.isbn});
+    if(!getauthorbasedonbook){
         return res.json({error: `No author found for the book of ${req.params.isbn}`});
     }
     return res.json({author: getauthorbasedonbook});
@@ -100,9 +103,9 @@ Description     to get all the authors based on ids
 Access          PUBLIC
 Parameter       id
 Methods         GET
-*/ sexy.get("/author/id/:id", (req, res) => {
-    const getauthorbasedonid=database.authors.filter((author)=>author.id===req.params.id);
-    if(getauthorbasedonid.length===0){
+*/ sexy.get("/author/id/:id", async(req, res) => {
+    const getauthorbasedonid=await AuthorModel.findOne({id: req.params.id});
+    if(!getauthorbasedonid){
         return res.json({error: `No author found for the id of ${req.params.id}`});
     }
     return res.json(getauthorbasedonid);
@@ -113,8 +116,9 @@ Description     to get all the publication
 Access          PUBLIC
 Parameter       NONE
 Methods         GET
-*/ sexy.get("/publication", (req, res) => {
-    return res.json({publication: database.publications});
+*/ sexy.get("/publication", async(req, res) => {
+    const getAllPublications = await PublicationModel.find();
+    return res.json(getAllPublications);
 } );
 /*
 Route           /publication/name
@@ -122,12 +126,12 @@ Description     to get all the publication based on name
 Access          PUBLIC
 Parameter       name
 Methods         GET
-*/ sexy.get("/publication/:name", (req, res) => {
-   let publication = database.publications.filter((publication) => publication.name === req.params.name);
-   if (!publication.length) {
+*/ sexy.get("/publication/:name", async(req, res) => {
+   const getpublicationbasedonname=await PublicationModel.findOne({name: req.params.name});
+   if (!getpublicationbasedonname) {
       return res.status(404).json({error: `No publication found for the name of ${req.params.name}`}); 
    }    
-   return res.json(publication);
+   return res.json(getpublicationbasedonname);
 });
 /*
 Route           /publication/book
@@ -135,13 +139,12 @@ Description     to get all the publication based on book
 Access          PUBLIC
 Parameter       book
 Methods         GET
-*/ sexy.get("/publication/book/:isbn", (req, res) => {
-    let publication = database.publications.filter((publication) => publication.books.includes(req.params.isbn));
-    if (!publication.length) {
+*/ sexy.get("/publication/book/:isbn", async(req, res) => {
+    const getpublicationbasedonbook=await PublicationModel.findOne({books: req.params.isbn});
+    if (!getpublicationbasedonbook) {
       return res.status(404).json({error: `No publication found for the book of ${req.params.isbn}`}); 
     }
-    let getpublicationbasedonbook=database.publications.filter((publication)=>publication.books.includes(req.params.isbn));
-    return res.json(getpublicationbasedonbook);
+        return res.json(getpublicationbasedonbook);
 })
 
 //post
@@ -151,19 +154,10 @@ Description     add new book
 Access          PUBLIC
 Parameter       NONE
 Methods         POST
-*/ sexy.post("/book/new", (req, res) => {
-    const newBook = req.body;
-    // Check if the book already exists
-    const existingBookIndex = database.books.findIndex((book) => book.ISBN === newBook.ISBN);
-
-    if (existingBookIndex !== -1) {
-        // If the book exists, update it
-        database.books[existingBookIndex] = newBook;
-    } else {
-        // If the book doesn't exist, add it
-        database.books.push(newBook);
-    }
-    return res.json({updatedBooks: database.books});
+*/ sexy.post("/book/new", async(req, res) => {
+    const {newBook} = req.body;
+    const addNewBook = BookModel.create(newBook);
+    return res.json({books: addNewBook, message: "Book was added!"});
 });
 /*
 Route           /author/new
@@ -172,19 +166,12 @@ Access          PUBLIC
 Parameter       NONE
 Methods         POST
 */ 
-sexy.post("/author/new", (req, res) => {
-    const newAuthor = req.body;
-    const existingAuthorIndex = database.authors.findIndex((author) => author.id === newAuthor.id);
-
-    if (existingAuthorIndex !== -1) {
-        // If the author exists, update it
-        database.authors[existingAuthorIndex] = newAuthor;
-    } else {
-        // If the author doesn't exist, add it
-        database.authors.push(newAuthor);
-    }
-    return res.json({updatedAuthors: database.authors});
+sexy.post("/author/new", async(req, res) => {
+    const {newAuthor} = req.body;
+    const addNewAuthor = AuthorModel.create(newAuthor);
+    return res.json({authors: addNewAuthor, message: "Author was added!"});
 });
+    
 
 /*
 Route           /publication/new
@@ -193,18 +180,10 @@ Access          PUBLIC
 Parameter       NONE
 Methods         POST
 */
-sexy.post("/publication/new", (req, res) => {
-    const newPublication = req.body;
-    const existingPublicationIndex = database.publications.findIndex((publication) => publication.id === newPublication.id);
-
-    if (existingPublicationIndex !== -1) {
-        // If the publication exists, update it
-        database.publications[existingPublicationIndex] = newPublication;
-    } else {
-        // If the publication doesn't exist, add it
-        database.publications.push(newPublication);
-    }
-    return res.json({updatedPublications: database.publications});
+sexy.post("/publication/new", async(req, res) => {
+    const {newPublication} = req.body;
+    const addNewPublication = PublicationModel.create(newPublication);
+    return res.json({publications: addNewPublication, message: "Publication was added!"});
 });
 
 //put
