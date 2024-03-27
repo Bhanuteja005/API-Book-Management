@@ -194,26 +194,52 @@ Access          public
 Parameter       isbn
 Methods         PUT
 */
-sexy.put("/publication/update/book/:isbn", (req, res) => {
-    // Update the publication database
-    database.publications.forEach((pub) => {
-       if(pub.id === req.body.pubId) {
-          return pub.books.push(req.params.isbn);
-       }
-    });
-    // Update the book database
-    database.books.forEach((book) => {
-       if(book.ISBN === req.params.isbn) {
-          book.publication = req.body.pubId;
-          return;
-       }
-    });
-    return res.json({
-       books: database.books,
-       publications: database.publications,
-       message: "Successfully updated publication",
-    });
+sexy.put("/book/update/:isbn", async(req, res) => {
+    const updatedBook = await BookModel.findOneAndUpdate(
+        { ISBN: req.params.isbn, publication: req.params.pubId },
+        { title: req.body.bookTitle },
+        { new: true }
+    );
+
+    if (!updatedBook) {
+        return res.status(404).json({ error: "Book not found in the given publication" });
+    }
+
+    return res.json({ book: updatedBook });
 });
+
+
+/*********** updating new author */
+/*
+Route           /book/author/update
+Description     Update an id of newauthor
+Access          public
+Parameter       isbn
+Methods         PUT
+*/
+sexy.put("/book/author/update/:isbn", async(req, res) => {
+    // Update the book database
+    const updatedBook = await BookModel.findOneAndUpdate(
+        { ISBN: req.params.isbn },
+        {$addToSet:{
+            authors: req.body.newAuthor
+        }},
+        { new: true}
+    );//to avoid duplicates we used addToSet
+    const updatedAuthor = await AuthorModel.findOneAndUpdate(
+        { id: req.body.newAuthor },
+        { $addToSet: { books: req.params.isbn } },
+        { new: true}
+    );
+    return res.json({
+        book: updatedBook,
+        author: updatedAuthor,
+    });
+
+});
+
+
+
 
 //delete
 /*
@@ -223,46 +249,12 @@ Access          public
 Method          DELETE
 Parameter       index
 */
-sexy.delete("/book/delete/:isbn", (req, res) => {
+sexy.delete("/book/delete/:isbn", async(req, res) => {
     //whichever book doesnot match with isbn, just send it to updatedBookDatabase array and return it back to front end
     //and rest will be filtered out
-    const updatedBookDatabase = database.books.filter((book) => book.ISBN !== req.params.isbn);
-    database.books = updatedBookDatabase;
-    return res.json({books: database.books});
+    const updatedBookDatabase = await BookModel.findOneAndDelete({ISBN: req.params.isbn});
+    return res.json({books: updatedBookDatabase});
 });
-/*
-Route           /author from book
-Description     delete author from book
-Access          public
-Method          DELETE
-Parameter       index
-*/
-
-sexy.delete("/book/delete/author/:isbn/:authorId", (req, res) => {
-    // Update the book database
-database.books.forEach((book) => {
-    if(book.ISBN === req.params.isbn) {
-       const newAuthorList = (book.authors || []).filter((id) => id !== parseInt(req.params.authorId));
-       book.authors = newAuthorList;
-       return;
-    }
- });
- 
- // Update the author database
- database.authors.forEach((author) => {
-    if(author.id === parseInt(req.params.authorId)) {
-       const newBookList = (author.books || []).filter((book) => book !== req.params.isbn);
-       author.books = newBookList;
-       return;
-    }
- });
-    return res.json({
-       book: database.books,
-       authors: database.authors,
-         message: "Author was deleted from the book",
-});
-}
-);
 
  sexy.listen(3000, () => {
     console.log("Hey server is running");
